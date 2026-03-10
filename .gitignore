@@ -1,0 +1,4 @@
+.env
+notion-env/
+__pycache__/
+*.pyc
