@@ -8,7 +8,7 @@ notion = NotionClient(auth=os.getenv("NOTION_TOKEN"))
 DATABASE_ID = os.getenv("ROUTINE_DB_ID")
 
 
-# 1. 다음 번호 반환 (마지막 번호 + 1, 시작은 0)
+# 번호 세팅 (시작 0, 추가 +1씩 진행)
 def get_next_number() -> int:
     response = notion.databases.query(
         database_id=DATABASE_ID,
@@ -27,7 +27,7 @@ def get_next_number() -> int:
         return 0
 
 
-# 2. 날짜 + 담당자로 행 조회
+# 일자 + 담당자로 행 조회
 def query_by_date(target_date: str, assignee: str) -> list:
     response = notion.databases.query(
         database_id=DATABASE_ID,
@@ -54,7 +54,7 @@ def query_by_date(target_date: str, assignee: str) -> list:
     return rows
 
 
-# 3. 행 생성 또는 수정 (날짜 + 담당자 + 시간대 조합으로 판단)
+# 행 생성 or 수정 (날짜 + 담당자 + 시간대)
 def create_or_update_row(target_date: str, assignee: str, row: dict, next_num: int = None):
     """
     row: {"시간대": ..., "내용": ..., "특이사항": ..., "달성도": ...}
@@ -89,8 +89,7 @@ def create_or_update_row(target_date: str, assignee: str, row: dict, next_num: i
         print(f"[CREATE] {target_date} / {assignee} / {row['시간대']} / 번호: {num}")
 
 
-# ─── 내부 헬퍼 ───────────────────────────────────────────
-
+# 내부 헬퍼
 def _find_row(target_date: str, assignee: str, time_slot: str) -> dict | None:
     response = notion.databases.query(
         database_id=DATABASE_ID,
