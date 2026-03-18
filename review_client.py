@@ -8,17 +8,17 @@ notion = NotionClient(auth=os.getenv("NOTION_TOKEN"))
 REVIEW_DB_ID = os.getenv("REVIEW_DB_ID")
 
 
-# 1. 다음 번호 반환
+# 번호 세팅
 def get_next_review_number() -> int:
     response = notion.databases.query(
         database_id=REVIEW_DB_ID,
-        sorts=[{"property": "제목", "direction": "descending"}],
+        sorts=[{"property": "번호", "direction": "descending"}],
         page_size=1
     )
     results = response.get("results", [])
     if not results:
         return 0
-    last_title = results[0]["properties"]["제목"]["title"]
+    last_title = results[0]["properties"]["번호"]["title"]
     if not last_title:
         return 0
     try:
@@ -27,7 +27,7 @@ def get_next_review_number() -> int:
         return 0
 
 
-# 2. 회고 생성 또는 수정 (날짜 + 담당자 조합으로 판단)
+# 회고 생성 or 수정 (일자 + 담당자 조합)
 def create_or_update_review(target_date: str, assignee: str, review: dict, next_num: int = None):
     """
     review: {
@@ -58,7 +58,7 @@ def create_or_update_review(target_date: str, assignee: str, review: dict, next_
         print(f"[UPDATE] 회고 {target_date} / {assignee}")
     else:
         num = next_num if next_num is not None else get_next_review_number()
-        properties["제목"] = {
+        properties["번호"] = {
             "title": [{"text": {"content": str(num)}}]
         }
         notion.pages.create(
@@ -68,7 +68,7 @@ def create_or_update_review(target_date: str, assignee: str, review: dict, next_
         print(f"[CREATE] 회고 {target_date} / {assignee} / 번호: {num}")
 
 
-# ─── 내부 헬퍼 ───────────────────────────────────────────
+# 내부 헬퍼
 
 def _find_review(target_date: str, assignee: str) -> dict | None:
     response = notion.databases.query(
